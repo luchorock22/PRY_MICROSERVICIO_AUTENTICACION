@@ -4,159 +4,69 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Registrar un nuevo usuario
-     */
+    // Registrar usuario
     public function register(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8|confirmed',
-                'role' => 'nullable|in:' . implode(',', User::availableRoles()),
-            ]);
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6',
+            'role' => 'required|in:admin,editor,user'
+        ]);
 
-            $validated['role'] = $validated['role'] ?? User::ROLE_USER;
-            $user = User::create($validated);
-            $token = $user->createToken('auth_token')->plainTextToken;
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role
+        ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Usuario registrado exitosamente',
-                'data' => [
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'role' => $user->role,
-                        'created_at' => $user->created_at,
-                    ],
-                    'token' => $token,
-                    'token_type' => 'Bearer',
-                ],
-            ], Response::HTTP_CREATED);
+        $token = $user->createToken('token_user')->plainTextToken;
 
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $e->errors(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
+        return response()->json([
+            'message' => 'Usuario registrado correctamente',
+            'token' => $token
+        ], 201);
     }
 
-    /**
-     * Iniciar sesión
-     */
+    // Login
     public function login(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'email' => 'required|email',
-                'password' => 'required|string',
-            ]);
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
 
-            $user = User::where('email', $validated['email'])->first();
+        $user = User::where('email', $request->email)->first();
 
-            if (!$user || !Hash::check($validated['password'], $user->password)) {
-                throw ValidationException::withMessages([
-                    'email' => ['Las credenciales proporcionadas son incorrectas.'],
-                ]);
-            }
-
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Sesión iniciada exitosamente',
-                'data' => [
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'role' => $user->role,
-                    ],
-                    'token' => $token,
-                    'token_type' => 'Bearer',
-                ],
-            ], Response::HTTP_OK);
-
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $e->errors(),
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Credenciales inválidas'], 401);
         }
-    }
 
-    /**
-     * Obtener información del usuario autenticado
-     */
-    public function me(Request $request)
-    {
-        $user = $request->user();
+        $token = $user->createToken('token_user')->plainTextToken;
 
         return response()->json([
-            'success' => true,
-            'message' => 'Información del usuario obtenida exitosamente',
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'is_admin' => $user->isAdmin(),
-                'is_editor' => $user->isEditor(),
-                'is_user' => $user->isUser(),
-                'created_at' => $user->created_at,
-            ],
-        ], Response::HTTP_OK);
+            'message' => 'Login correcto',
+            'token' => $token,
+            'role' => $user->role
+        ]);
     }
 
-    /**
-     * Cerrar sesión (logout)
-     */
+    // Info usuario autenticado
+    public function user(Request $request)
+    {
+        return response()->json($request->user());
+    }
+
+    // Logout
     public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Sesión cerrada exitosamente',
-        ], Response::HTTP_OK);
-    }
-
-    /**
-     * Cerrar todas las sesiones
-     */
-    public function logoutAll(Request $request)
     {
         $request->user()->tokens()->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Todas las sesiones han sido cerradas exitosamente',
-        ], Response::HTTP_OK);
-    }
-
-    /**
-     * Verificar si el token es válido
-     */
-    public function verify(Request $request)
-    {
-        return response()->json([
-            'success' => true,
-            'message' => 'Token válido',
-            'data' => [
-                'valid' => true,
-            ],
-        ], Response::HTTP_OK);
+        return response()->json(['message' => 'Sesión cerrada']);
     }
 }
