@@ -1,180 +1,61 @@
-Microservicio de Gestión de Usuarios con Laravel Sanctum
-🧩 Objetivo
+# 🛡️ Microservicio de Gestión de Usuarios – Autenticación con Laravel Sanctum
 
-Implementar un sistema de autenticación mediante Laravel Sanctum dentro del microservicio de Gestión de Usuarios, permitiendo que los demás microservicios validen solicitudes utilizando tokens de usuario según su perfil: administrador, editor o usuario común.
+## 📌 Objetivo
+Implementar un sistema de autenticación basado en **tokens personales** utilizando **Laravel Sanctum**, permitiendo que los demás microservicios validen solicitudes según el **perfil del usuario**: administrador, editor o usuario común.
 
-📝 Descripción General
+---
 
-Este microservicio implementa autenticación basada en tokens personales generados por Laravel Sanctum.
-Cada usuario registrado obtiene un token único para interactuar con otros microservicios del sistema.
-Mediante este token se valida:
+## 📖 Descripción General
+Este microservicio funciona como el **punto central de autenticación** dentro del sistema.  
+Permite que cada usuario registrado obtenga un **token personal** que utilizará para acceder a otros microservicios.
 
-Identidad del usuario autenticado
+El microservicio permite:
 
-Perfil asignado (admin, editor, user)
+- Registrar nuevos usuarios con su perfil.
+- Iniciar sesión y generar tokens.
+- Validar usuarios autenticados mediante token.
+- Cerrar sesión eliminando tokens activos.
 
-Permisos según el recurso solicitado
+---
 
-El microservicio se encarga de:
+## 🛠️ Actividades Realizadas
 
-Registrar usuarios
+### 1️⃣ Configuración del entorno
+- Creación de proyecto Laravel.
+- Instalación de Laravel Sanctum.
+- Configuración del middleware `auth:sanctum` para rutas protegidas.
 
-Autenticar usuarios y generar tokens
+### 2️⃣ Modelo de Usuario
+El modelo `User` contiene:
 
-Validar el usuario autenticado
+- `name`
+- `email`
+- `password`
+- `perfil` (rol del usuario)
 
-Cerrar sesión e invalidar tokens
+Este campo permite diferenciar permisos entre usuarios.
 
-🚀 Actividades Realizadas
-1️⃣ Configuración del entorno
-Instalar Sanctum:
-composer require laravel/sanctum
+### 3️⃣ Controlador de Autenticación
+Funciones implementadas:
 
-Publicar archivos de configuración:
-php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+#### ✔ Registro (`register`)
+Guarda datos y devuelve token.
 
-Migrar tablas:
-php artisan migrate
+#### ✔ Inicio de sesión (`login`)
+Verifica credenciales y genera un nuevo token.
 
-Agregar middleware en app/Http/Kernel.php:
-'api' => [
-    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-    'throttle:api',
-    \Illuminate\Routing\Middleware\SubstituteBindings::class,
-],
+#### ✔ Cierre de sesión (`logout`)
+Elimina los tokens del usuario autenticado.
 
-2️⃣ Definición del Modelo Usuario
+### 4️⃣ Rutas API
+| Método | Ruta | Acción |
+|--------|------|--------|
+| POST | `/api/register` | Registro de usuario |
+| POST | `/api/login` | Inicio de sesión |
+| POST | `/api/logout` | Cierre de sesión |
+| GET  | `/api/user` | Ruta protegida: datos del usuario |
 
-En app/Models/User.php:
+Las rutas protegidas usan:
+```php
+middleware('auth:sanctum')
 
-use Laravel\Sanctum\HasApiTokens;
-
-class User extends Authenticatable
-{
-    use HasApiTokens, Notifiable;
-
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-}
-
-3️⃣ Controlador de Autenticación
-
-Ejemplo de controlador AuthController.php:
-
-Registro
-public function register(Request $request)
-{
-    $request->validate([
-        'name' => 'required',
-        'email' => 'required|email|unique:users',
-        'password' => 'required|min:6',
-        'role' => 'required|in:admin,editor,user'
-    ]);
-
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => bcrypt($request->password),
-        'role' => $request->role,
-    ]);
-
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'message' => 'Usuario registrado correctamente',
-        'token' => $token
-    ]);
-}
-
-Inicio de sesión
-public function login(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required'
-    ]);
-
-    $user = User::where('email', $request->email)->first();
-
-    if (!$user || !Hash::check($request->password, $user->password)) {
-        return response()->json(['message' => 'Credenciales incorrectas'], 401);
-    }
-
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'message' => 'Inicio de sesión exitoso',
-        'token' => $token
-    ]);
-}
-
-Cierre de sesión (Logout)
-public function logout(Request $request)
-{
-    $request->user()->currentAccessToken()->delete();
-
-    return response()->json([
-        'message' => 'Sesión cerrada correctamente'
-    ]);
-}
-
-4️⃣ Rutas de la API
-
-En routes/api.php:
-
-use App\Http\Controllers\AuthController;
-
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-});
-
-5️⃣ Pruebas en Postman
-✔ Registrar usuario
-POST /api/register
-Body (JSON):
-{
-  "name": "Kelly",
-  "email": "kelly@example.com",
-  "password": "123456",
-  "role": "admin"
-}
-
-✔ Iniciar sesión
-POST /api/login
-Body (JSON):
-{
-  "email": "kelly@example.com",
-  "password": "123456"
-}
-
-
-La respuesta incluye un token.
-
-✔ Consultar ruta protegida
-GET /api/user
-Headers:
-Authorization: Bearer {token}
-
-✔ Cerrar sesión
-POST /api/logout
-Headers:
-Authorization: Bearer {token}
-
-
-Luego probar nuevamente /api/user → Debe dar 401 Unauthorized.
