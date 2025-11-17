@@ -10,7 +10,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // Rutas protegidas con Sanctum
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     Route::get('/verify', [AuthController::class, 'verify']);
