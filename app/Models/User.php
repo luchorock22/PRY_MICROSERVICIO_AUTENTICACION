@@ -2,21 +2,21 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    // --- ROLES ---
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_EDITOR = 'editor';
+    public const ROLE_USER = 'user';
+
+    // Campos permitidos
     protected $fillable = [
         'name',
         'email',
@@ -24,21 +24,13 @@ class User extends Authenticatable
         'role',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    // Campos ocultos
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    // Convertir campos automáticamente
     protected function casts(): array
     {
         return [
@@ -46,4 +38,31 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // --- MÉTODOS DE ROLES ---
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isEditor(): bool
+    {
+        return $this->role === self::ROLE_EDITOR;
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === self::ROLE_USER;
+    }
+
+    // --- LISTA DE ROLES ---
+    public static function availableRoles(): array
+    {
+        return [
+            self::ROLE_ADMIN,
+            self::ROLE_EDITOR,
+            self::ROLE_USER,
+        ];
+    }
 }
+
