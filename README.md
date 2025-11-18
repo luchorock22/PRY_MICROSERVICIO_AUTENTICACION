@@ -6,18 +6,48 @@ Implementar un sistema de autenticación basado en **tokens personales** utiliza
 ---
 
 ## 📖 Descripción General
-Este microservicio funciona como el **punto central de autenticación** dentro del sistema.  
-Permite que cada usuario registrado obtenga un **token personal** que utilizará para acceder a otros microservicios.
-
+Este microservicio actúa como el núcleo de identidad y autorización del sistema.
+Su propósito es emitir, validar y gestionar tokens generados mediante Laravel Sanctum, garantizando un acceso seguro entre los diferentes microservicios.
 El microservicio permite:
 
+Cada usuario registrado obtiene un token de acceso personal, el cual es enviado en las peticiones hacia otros servicios. Dicho token:
+- Identifica al usuario.
+- Define su perfil y permisos.
+- Permite validar la autenticidad de las solicitudes.
+- Facilita el cierre de sesión y la revocación de tokens.
 - Registrar nuevos usuarios con su perfil.
 - Iniciar sesión y generar tokens.
 - Validar usuarios autenticados mediante token.
 - Cerrar sesión eliminando tokens activos.
-
 ---
+🛠️ Funcionalidades del Microservicio
 
+El sistema implementa un flujo de autenticación completo:
+
+🔹 Registro de Usuarios
+
+Crea nuevos usuarios junto con su perfil (rol).
+Los perfiles permiten clasificar permisos según el tipo de usuario:
+admin, editor, user, etc.
+
+🔹 Inicio de Sesión
+
+Se validan las credenciales y se genera un token personal mediante Sanctum.
+Este token se utilizará en todos los microservicios del ecosistema.
+
+🔹 Validación de Usuario Autenticado
+
+Mediante el token enviado en los encabezados HTTP, se puede identificar de forma segura:
+
+Datos del usuario
+
+Perfil o rol
+
+Permisos relacionados
+
+🔹 Cierre de Sesión
+
+Elimina todos los tokens activos del usuario autenticado, revocando inmediatamente el acceso.
 ## 🛠️ Actividades Realizadas
 
 ### 1️⃣ Configuración del entorno
@@ -26,6 +56,7 @@ El microservicio permite:
 - Configuración del middleware `auth:sanctum` para rutas protegidas.
 
 ### 2️⃣ Modelo de Usuario
+
 El modelo `User` contiene:
 
 - `name`
