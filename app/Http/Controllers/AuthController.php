@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // Registrar usuario
+    // Registrar usuario (opcional)
     public function register(Request $request)
     {
         $request->validate([
@@ -56,17 +56,44 @@ class AuthController extends Controller
         ]);
     }
 
-    // Info usuario autenticado
+    // Información del usuario autenticado
     public function user(Request $request)
     {
         return response()->json($request->user());
     }
 
-    // Logout
+    // Logout del dispositivo actual
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Sesión cerrada']);
     }
+
+    // Logout de todos los dispositivos
+    public function logoutAll(Request $request)
+    {
+        $request->user()->tokens()->delete();
+
+        return response()->json(['message' => 'Todas las sesiones cerradas']);
+    }
+
+    // Endpoint solicitado para validar token
+    public function validateToken(Request $request)
+    {
+        return response()->json([
+            'valid' => true,
+            'user' => $request->user()
+        ]);
+    }
+
+    // Verificar usuario 
+    public function verify(Request $request)
+    {
+        return response()->json([
+            'message' => 'Token válido',
+            'user' => $request->user()
+        ]);
+    }
+
 }
