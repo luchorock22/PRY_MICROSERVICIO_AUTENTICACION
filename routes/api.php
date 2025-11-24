@@ -13,6 +13,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout-all', [AuthController::class, 'logoutAll']);
+    Route::get('/validate-token', [AuthController::class, 'validateToken']); 
     Route::get('/verify', [AuthController::class, 'verify']);
 
 });
