@@ -43,14 +43,14 @@ Elimina tokens activos del usuario.
 
 ## 🛠️ Actividades Realizadas
 
-### 📌 **1. Configuración inicial
+#📌 **1. Configuración inicial
 - Creación del proyecto Laravel.
 - Instalación de **Laravel Sanctum**.
 - Configuración del middleware `auth:sanctum`.
 
 ---
 
-## 🗄️ 📌 **2. Modelo `User`
+# 🗄️ 📌 **2. Modelo `User`
 
 El modelo incluye:
 
@@ -63,7 +63,7 @@ Este campo se utiliza para definir los permisos.
 
 ---
 
-## 📌 **3. Configuración de Base de Datos (MySQL – XAMPP)
+# 📌 **3. Configuración de Base de Datos (MySQL – XAMPP)
 
 ### Crear base de datos:
 
@@ -84,7 +84,7 @@ DB_PASSWORD=
 php artisan migrate
 ```
 ---
-### 📌 **4. Controlador de Autenticación
+# 📌 **4. Controlador de Autenticación
 Funciones implementadas:
 
 #### ✔ Registro (`register`)
@@ -96,7 +96,7 @@ Verifica credenciales y genera un nuevo token.
 #### ✔ Cierre de sesión (`logout`)
 Elimina los tokens del usuario autenticado.
 
-### 📌 **5  Rutas API
+# 📌 **5. Rutas API
 | Método | Ruta | Acción |
 |--------|------|--------|
 | POST | `/api/register` | Registro de usuario |
