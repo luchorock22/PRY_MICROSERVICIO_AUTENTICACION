@@ -83,7 +83,7 @@ DB_PASSWORD=
 
 php artisan migrate
 
-### 3️⃣ Controlador de Autenticación
+### 4️⃣ Controlador de Autenticación
 Funciones implementadas:
 
 #### ✔ Registro (`register`)
@@ -95,7 +95,7 @@ Verifica credenciales y genera un nuevo token.
 #### ✔ Cierre de sesión (`logout`)
 Elimina los tokens del usuario autenticado.
 
-### 4️⃣ Rutas API
+### 5 Rutas API
 | Método | Ruta | Acción |
 |--------|------|--------|
 | POST | `/api/register` | Registro de usuario |
