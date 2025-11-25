@@ -6,65 +6,82 @@ Implementar un sistema de autenticación basado en **tokens personales** utiliza
 ---
 
 ## 📖 Descripción General
-Este microservicio actúa como el núcleo de identidad y autorización del sistema.
-Su propósito es emitir, validar y gestionar tokens generados mediante Laravel Sanctum, garantizando un acceso seguro entre los diferentes microservicios.
-El microservicio permite:
+Este microservicio actúa como proveedor de identidad del sistema.  
+Su responsabilidad principal es:
 
-Cada usuario registrado obtiene un token de acceso personal, el cual es enviado en las peticiones hacia otros servicios. Dicho token:
-- Identifica al usuario.
-- Define su perfil y permisos.
-- Permite validar la autenticidad de las solicitudes.
-- Facilita el cierre de sesión y la revocación de tokens.
-- Registrar nuevos usuarios con su perfil.
-- Iniciar sesión y generar tokens.
-- Validar usuarios autenticados mediante token.
-- Cerrar sesión eliminando tokens activos.
+- Registrar usuarios.
+- Autenticar mediante email y contraseña.
+- Generar tokens personales con Sanctum.
+- Validar usuarios autenticados.
+- Cerrar sesión eliminando tokens.
+
+Los demás microservicios consumirán este servicio para validar solicitudes mediante tokens.
+
 ---
-🛠️ Funcionalidades del Microservicio
 
-El sistema implementa un flujo de autenticación completo:
+## 🛠️ Funcionalidades del Microservicio
 
-🔹 Registro de Usuarios
+### 🔹 Registro de Usuarios
+Permite crear usuarios con su perfil (rol):  
+`admin`, `editor` o `user`.
 
-Crea nuevos usuarios junto con su perfil (rol).
-Los perfiles permiten clasificar permisos según el tipo de usuario:
-admin, editor, user, etc.
+### 🔹 Inicio de Sesión
+Genera un token personal usando Laravel Sanctum, el cual será enviado a los otros microservicios.
 
-🔹 Inicio de Sesión
+### 🔹 Validación de Usuario Autenticado
+Mediante el token enviado por headers, identifica:
 
-Se validan las credenciales y se genera un token personal mediante Sanctum.
-Este token se utilizará en todos los microservicios del ecosistema.
+- ID del usuario  
+- Nombre  
+- Email  
+- Perfil o rol
 
-🔹 Validación de Usuario Autenticado
+### 🔹 Cierre de Sesión
+Elimina tokens activos del usuario.
 
-Mediante el token enviado en los encabezados HTTP, se puede identificar de forma segura:
+---
 
-Datos del usuario
-
-Perfil o rol
-
-Permisos relacionados
-
-🔹 Cierre de Sesión
-
-Elimina todos los tokens activos del usuario autenticado, revocando inmediatamente el acceso.
 ## 🛠️ Actividades Realizadas
 
-### 1️⃣ Configuración del entorno
-- Creación de proyecto Laravel.
-- Instalación de Laravel Sanctum.
-- Configuración del middleware `auth:sanctum` para rutas protegidas.
+### 1️⃣ Configuración inicial
+- Creación del proyecto Laravel.
+- Instalación de **Laravel Sanctum**.
+- Configuración del middleware `auth:sanctum`.
 
-### 2️⃣ Modelo de Usuario
+---
 
-El modelo `User` contiene:
+## 🗄️ 2️⃣ Modelo `User`
+
+El modelo incluye:
 
 - `name`
 - `email`
 - `password`
 - `perfil` (rol del usuario)
 
-Este campo permite diferenciar permisos entre usuarios.
+Este campo se utiliza para definir los permisos.
+
+---
+
+## 🗄️ 3️⃣ Configuración de Base de Datos (MySQL – XAMPP)
+
+### Crear base de datos:
+
+db_users_auto
+
+### Configurar `.env`
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=db_users_auto
+DB_USERNAME=root
+DB_PASSWORD=
+
+### Ejecutar migraciones:
+```bash
+
+php artisan migrate
 
 ### 3️⃣ Controlador de Autenticación
 Funciones implementadas:
